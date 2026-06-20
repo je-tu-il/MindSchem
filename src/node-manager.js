@@ -69,7 +69,8 @@ export function createNodeData(options = {}) {
       width: options.width || DEFAULT_PROPS.width,
       linkColor: options.linkColor || DEFAULT_PROPS.linkColor,
       linkStyle: options.linkStyle || DEFAULT_PROPS.linkStyle,
-      linkDir: options.linkDir || DEFAULT_PROPS.linkDir
+      linkDir: options.linkDir || DEFAULT_PROPS.linkDir,
+      isolated: options.isolated || false
     },
     textExpanded: options.textExpanded || false,
     links: options.links || []
@@ -574,7 +575,7 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
         if (!n) return;
         for (const childId of n.children) {
           const childNode = this.nodes.get(childId);
-          if (childNode) {
+          if (childNode && !childNode.props.isolated) {
              oldSubtreeProps.set(childId, { ...childNode.props });
              
              if (hasLinkProp) {
@@ -587,6 +588,7 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
                  if (newProps[k] !== undefined) childNode.props[k] = newProps[k];
                });
              }
+             this.applyNodeStyles(childId);
              applyCascade(childId);
           }
         }
@@ -601,7 +603,10 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
         node.props = { ...oldProps };
         for (const [cId, cProps] of oldSubtreeProps.entries()) {
           const childNode = this.nodes.get(cId);
-          if (childNode) childNode.props = cProps;
+          if (childNode) {
+            childNode.props = cProps;
+            this.applyNodeStyles(cId);
+          }
         }
         this.applyNodeStyles(nodeId);
         this.bus.emit('node:selected', node);
@@ -615,25 +620,19 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
             if (!n) return;
             for (const childId of n.children) {
               const childNode = this.nodes.get(childId);
-              if (childNode) {
+              if (childNode && !childNode.props.isolated) {
                  linkKeys.forEach(k => {
                    if (newProps[k] !== undefined) childNode.props[k] = newProps[k];
                  });
+                 colorKeys.forEach(k => {
+                   if (newProps[k] !== undefined) childNode.props[k] = newProps[k];
+                 });
+                 this.applyNodeStyles(childId);
                  cascade(childId);
               }
             }
           };
           cascade(nodeId);
-        }
-        if (hasColorProp) {
-          for (const childId of node.children) {
-            const childNode = this.nodes.get(childId);
-            if (childNode) {
-              colorKeys.forEach(k => {
-                if (newProps[k] !== undefined) childNode.props[k] = newProps[k];
-              });
-            }
-          }
         }
         this.applyNodeStyles(nodeId);
         this.bus.emit('node:selected', node);
@@ -642,6 +641,116 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
     });
 
     this.applyNodeStyles(nodeId);
+    this.bus.emit('nodes:changed');
+  }
+
+  updatePropsMultiple(nodeIds, newProps, cascade = false) {
+    if (!nodeIds || nodeIds.length === 0) return;
+
+    const oldPropsMap = new Map();
+    const oldSubtreeProps = new Map();
+    
+    const linkKeys = ['linkColor', 'linkStyle', 'linkDir'];
+    const colorKeys = ['bgColor', 'textColor', 'fontFamily', 'opacity', 'width'];
+    const hasLinkProp = Object.keys(newProps).some(k => linkKeys.includes(k));
+    const hasColorProp = Object.keys(newProps).some(k => colorKeys.includes(k));
+
+    for (const nodeId of nodeIds) {
+      const node = this.nodes.get(nodeId);
+      if (!node) continue;
+      oldPropsMap.set(nodeId, { ...node.props });
+      Object.assign(node.props, newProps);
+
+      if (cascade && (hasLinkProp || hasColorProp)) {
+        const applyCascade = (nId) => {
+          const n = this.nodes.get(nId);
+          if (!n) return;
+          for (const childId of n.children) {
+            const childNode = this.nodes.get(childId);
+            if (childNode && !childNode.props.isolated) {
+               if (!oldSubtreeProps.has(childId)) {
+                 oldSubtreeProps.set(childId, { ...childNode.props });
+               }
+               if (hasLinkProp) {
+                 linkKeys.forEach(k => {
+                   if (newProps[k] !== undefined) childNode.props[k] = newProps[k];
+                 });
+               }
+               if (hasColorProp) {
+                 colorKeys.forEach(k => {
+                   if (newProps[k] !== undefined) childNode.props[k] = newProps[k];
+                 });
+               }
+               this.applyNodeStyles(childId);
+               applyCascade(childId);
+            }
+          }
+        };
+        applyCascade(nodeId);
+      }
+    }
+
+    this.history.push({
+      type: 'updatePropsMultiple',
+      description: 'Modifier propriétés multiples',
+      undo: () => {
+        for (const [nId, oProps] of oldPropsMap.entries()) {
+          const node = this.nodes.get(nId);
+          if (node) {
+            node.props = { ...oProps };
+            this.applyNodeStyles(nId);
+          }
+        }
+        for (const [cId, cProps] of oldSubtreeProps.entries()) {
+          const childNode = this.nodes.get(cId);
+          if (childNode) {
+            childNode.props = cProps;
+            this.applyNodeStyles(cId);
+          }
+        }
+        if (nodeIds.length === 1) {
+           this.bus.emit('node:selected', this.nodes.get(nodeIds[0]));
+        }
+        this.bus.emit('nodes:changed');
+      },
+      redo: () => {
+        for (const nodeId of nodeIds) {
+          const node = this.nodes.get(nodeId);
+          if (!node) continue;
+          Object.assign(node.props, newProps);
+
+          if (hasLinkProp || hasColorProp) {
+            const cascadeFn = (nId) => {
+              const n = this.nodes.get(nId);
+              if (!n) return;
+              for (const childId of n.children) {
+                const childNode = this.nodes.get(childId);
+                if (childNode && !childNode.props.isolated) {
+                   linkKeys.forEach(k => {
+                     if (newProps[k] !== undefined) childNode.props[k] = newProps[k];
+                   });
+                   colorKeys.forEach(k => {
+                     if (newProps[k] !== undefined) childNode.props[k] = newProps[k];
+                   });
+                   this.applyNodeStyles(childId);
+                   cascadeFn(childId);
+                }
+              }
+            };
+            cascadeFn(nodeId);
+          }
+          this.applyNodeStyles(nodeId);
+        }
+        if (nodeIds.length === 1) {
+           this.bus.emit('node:selected', this.nodes.get(nodeIds[0]));
+        }
+        this.bus.emit('nodes:changed');
+      }
+    });
+
+    for (const nodeId of nodeIds) {
+      this.applyNodeStyles(nodeId);
+    }
     this.bus.emit('nodes:changed');
   }
 
@@ -856,6 +965,7 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
         <span class="node-drag-handle">
           <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
         </span>
+        <div class="node-info-icon" title="Ce nœud est isolé de l'héritage">🔒</div>
         <div class="node-content">${this.escapeHtml(data.text)}</div>
       </div>
       <button class="node-add-child" title="Ajouter enfant">
@@ -1180,6 +1290,12 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
     } else {
       el.style.width = `${props.width}px`;
       el.style.maxWidth = 'none';
+    }
+    
+    if (props.isolated) {
+      el.classList.add('isolated');
+    } else {
+      el.classList.remove('isolated');
     }
   }
 

@@ -62,6 +62,7 @@ function serializeBox(node, nodeManager, indent) {
   if (node.props.linkColor) xml += `${pad}  <linkcolor>${escapeXml(node.props.linkColor)}</linkcolor>\n`;
   if (node.props.linkStyle) xml += `${pad}  <linkstyle>${escapeXml(node.props.linkStyle)}</linkstyle>\n`;
   if (node.props.linkDir) xml += `${pad}  <linkdir>${escapeXml(node.props.linkDir)}</linkdir>\n`;
+  if (node.props.isolated) xml += `${pad}  <isolated>true</isolated>\n`;
   
   if (node.links && node.links.length > 0) {
     for (const linkId of node.links) {

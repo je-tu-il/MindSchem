@@ -295,3 +295,7 @@
   border-color: var(--accent-primary);
   color: white;
 }
+  
+.node-info-icon { display: none; font-size: 12px; margin-right: 4px; }  
+.mind-node.isolated .node-info-icon { display: inline-block; }  
+body:not(.show-node-info) .node-info-icon { display: none !important; } 

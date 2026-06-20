@@ -126,14 +126,19 @@ export class App {
    * Setup import/export functionality
    */
   setupImportExport() {
-    // Import button
-    document.getElementById('btn-import')?.addEventListener('click', () => {
-      this.importXML();
+    // Wire up import/export buttons
+    document.getElementById('btn-export-xml')?.addEventListener('click', () => {
+      const xml = serializeToGlooMapsXML(this.nodeManager.nodes);
+      this.downloadFile(xml, 'mindmap.xml', 'application/xml');
     });
 
-    // Export button
-    document.getElementById('btn-export')?.addEventListener('click', () => {
-      this.exportXML();
+    document.getElementById('btn-import-xml')?.addEventListener('click', () => {
+      document.getElementById('file-import-xml').click();
+    });
+
+    document.getElementById('btn-show-info')?.addEventListener('click', (e) => {
+      document.body.classList.toggle('show-node-info');
+      e.currentTarget.classList.toggle('active');
     });
   }
 

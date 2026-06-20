@@ -117,6 +117,9 @@ function parseBox(boxEl, parentId, nodesArray, baseX, baseY, depth) {
   const x = parsedX !== null && !isNaN(parsedX) ? parsedX : baseX + depth * 280;
   const y = parsedY !== null && !isNaN(parsedY) ? parsedY : baseY;
 
+  const isolatedEl = boxEl.querySelector(':scope > isolated');
+  const isolated = isolatedEl ? isolatedEl.textContent.trim() === 'true' : false;
+
   const nodeData = createNodeData({
     id,
     text,
@@ -129,6 +132,7 @@ function parseBox(boxEl, parentId, nodesArray, baseX, baseY, depth) {
     opacity: isNaN(opacity) ? 1 : Math.max(0, Math.min(1, opacity)),
     width: isNaN(parseInt(width)) && width !== 'auto' ? 'auto' : (width === 'auto' ? 'auto' : parseInt(width)),
     textExpanded,
+    isolated,
     linkColor,
     linkStyle,
     linkDir,

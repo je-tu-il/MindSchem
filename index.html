@@ -43,6 +43,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10H11a5 5 0 00-5 5v0a5 5 0 005 5h1M21 10l-4-4M21 10l-4 4"/></svg>
           </button>
         </div>
+        <button class="toolbar-btn" id="btn-show-info" title="Afficher les infos (Cadenas)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </button>
       </div>
       <div class="toolbar-center">
         <div class="toolbar-group">
@@ -85,6 +88,16 @@
         <button id="btn-close-panel" class="panel-close">&times;</button>
       </div>
       <div class="panel-content">
+        <div class="prop-group" style="padding-bottom: 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 16px;">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer;">
+            <input type="checkbox" id="prop-auto-cascade" />
+            Héritage Automatique
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; margin-top: 8px; color: var(--warning-color, #eab308);">
+            <input type="checkbox" id="prop-isolated" />
+            🔒 Isolé de l'héritage
+          </label>
+        </div>
         <div class="prop-group">
           <label class="prop-label">
             Couleur de fond

@@ -292,7 +292,7 @@ export class ConnectionsRenderer {
       
       if (dir === 'backward' || dir === 'both') {
         const startId = `arrow-start-${colorId}`;
-        this.createMarker(startId, color, 'auto-start-reverse', 'M 0 0 L 10 5 L 0 10 z', 1);
+        this.createMarker(startId, color, 'auto-start-reverse', 'M 0 0 L 10 5 L 0 10 z', 9);
         path.setAttribute('marker-start', `url(#${startId})`);
       }
     }

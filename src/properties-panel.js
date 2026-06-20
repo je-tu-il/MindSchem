@@ -26,6 +26,12 @@ export class PropertiesPanel {
     const bgColorText = document.getElementById('prop-bg-color-text');
     bgColor?.addEventListener('input', (e) => {
       bgColorText.value = e.target.value;
+      if (this.nodeManager?.selectedNodes) {
+        this.nodeManager.selectedNodes.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.backgroundColor = e.target.value;
+        });
+      }
     });
     bgColor?.addEventListener('change', (e) => {
       this.applyProp('bgColor', e.target.value);
@@ -40,6 +46,12 @@ export class PropertiesPanel {
     const textColorText = document.getElementById('prop-text-color-text');
     textColor?.addEventListener('input', (e) => {
       textColorText.value = e.target.value;
+      if (this.nodeManager?.selectedNodes) {
+        this.nodeManager.selectedNodes.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.color = e.target.value;
+        });
+      }
     });
     textColor?.addEventListener('change', (e) => {
       this.applyProp('textColor', e.target.value);
@@ -60,6 +72,12 @@ export class PropertiesPanel {
     opacity?.addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
       opacityValue.textContent = `${Math.round(val * 100)}%`;
+      if (this.nodeManager?.selectedNodes) {
+        this.nodeManager.selectedNodes.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.opacity = val;
+        });
+      }
     });
     opacity?.addEventListener('change', (e) => {
       this.applyProp('opacity', parseFloat(e.target.value));
@@ -74,6 +92,12 @@ export class PropertiesPanel {
       if (widthAuto) widthAuto.checked = false;
       const val = parseInt(e.target.value);
       if (widthValue) widthValue.textContent = `${val}px`;
+      if (this.nodeManager?.selectedNodes) {
+        this.nodeManager.selectedNodes.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.width = `${val}px`;
+        });
+      }
     });
     widthSlider?.addEventListener('change', (e) => {
       this.applyProp('width', parseInt(e.target.value));
@@ -108,6 +132,11 @@ export class PropertiesPanel {
         this.triggerCascade(propName);
       });
     });
+
+    // Isolation toggle
+    document.getElementById('prop-isolated')?.addEventListener('change', (e) => {
+      this.applyProp('isolated', e.target.checked);
+    });
   }
 
   triggerCascade(propGroup) {
@@ -128,8 +157,39 @@ export class PropertiesPanel {
     }
 
     if (Object.keys(propsToApply).length > 0) {
-      this.nodeManager.updateProps(this.currentNodeId, propsToApply, true);
+      const nodeIds = Array.from(this.nodeManager.selectedNodes);
+      if (nodeIds.length > 0) {
+        this.nodeManager.updatePropsMultiple(nodeIds, propsToApply, true);
+      }
     }
+  }
+
+  applyProp(propName, value) {
+    if (!this.nodeManager?.selectedNodes || this.nodeManager.selectedNodes.size === 0) return;
+    
+    // Check auto-cascade toggle
+    const autoCascadeCheckbox = document.getElementById('prop-auto-cascade');
+    const cascade = autoCascadeCheckbox ? autoCascadeCheckbox.checked : false;
+
+    const propsToUpdate = { [propName]: value };
+    const nodeIds = Array.from(this.nodeManager.selectedNodes);
+
+    // Auto-isolate child nodes if their property is explicitly modified
+    if (propName !== 'isolated') {
+      nodeIds.forEach(id => {
+        const n = this.nodeManager.nodes.get(id);
+        if (n && n.parentId) {
+          propsToUpdate.isolated = true;
+          // Update UI if the modified child is the currently selected node
+          if (id === this.currentNodeId) {
+            const isolated = document.getElementById('prop-isolated');
+            if (isolated) isolated.checked = true;
+          }
+        }
+      });
+    }
+
+    this.nodeManager.updatePropsMultiple(nodeIds, propsToUpdate, cascade);
   }
 
   onNodeSelected(node) {
@@ -144,6 +204,7 @@ export class PropertiesPanel {
     const font = document.getElementById('prop-font');
     const opacity = document.getElementById('prop-opacity');
     const opacityValue = document.getElementById('prop-opacity-value');
+    const isolated = document.getElementById('prop-isolated');
 
     if (bgColor) bgColor.value = this.toValidHex(node.props.bgColor);
     if (bgColorText) bgColorText.value = node.props.bgColor;
@@ -152,6 +213,7 @@ export class PropertiesPanel {
     if (font) font.value = node.props.fontFamily;
     if (opacity) opacity.value = node.props.opacity;
     if (opacityValue) opacityValue.textContent = `${Math.round(node.props.opacity * 100)}%`;
+    if (isolated) isolated.checked = !!node.props.isolated;
 
     const widthSlider = document.getElementById('prop-width');
     const widthValue = document.getElementById('prop-width-value');

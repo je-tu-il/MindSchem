@@ -1,4 +1,5 @@
-Les couleurs ne s'actualise plus en direct
-Les fleches vers un parent rentre dans la case au lieu de se coller a l'exterieur
-L'heritage de marche pas quand je clic sur une des fleches
-
+Selectionner plusieurs ne permet pas de les isoler en meme temps ni l'activation de responsive 
+Quand on change la couleur d'une ligne, enlever la couleur de selection jaune provisoirement et mettre la couleur en direct de notre choix
+La fleche vers le parent est toujours a l'interieur dans la case
+L'organisation automatique et la creation de case sans se chevaucher ne prend pas en compte le fait d'agrandir une case sois meme
+L'heritage automatique ne marche pas 
