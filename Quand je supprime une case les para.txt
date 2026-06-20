@@ -1,0 +1,4 @@
+Les couleurs ne s'actualise plus en direct
+Les fleches vers un parent rentre dans la case au lieu de se coller a l'exterieur
+L'heritage de marche pas quand je clic sur une des fleches
+

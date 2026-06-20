@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="MindSchem - Application de cartographie mentale et d'arborescence avec import/export GlooMaps XML" />
+  <title>MindSchem - Cartographie Mentale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Toolbar -->
+    <header id="toolbar" class="toolbar">
+      <div class="toolbar-left">
+        <div class="toolbar-brand">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          <span class="brand-text">MindSchem</span>
+        </div>
+        <div class="toolbar-separator"></div>
+        <div class="toolbar-group">
+          <button id="btn-add-child" class="toolbar-btn" title="Ajouter enfant (Tab)" data-tooltip="Ajouter enfant">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button id="btn-add-sibling" class="toolbar-btn" title="Ajouter frère (Entrée)" data-tooltip="Ajouter frère">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/><circle cx="18" cy="6" r="2"/></svg>
+          </button>
+          <button id="btn-delete" class="toolbar-btn toolbar-btn--danger" title="Supprimer (Suppr)" data-tooltip="Supprimer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+        <div class="toolbar-separator"></div>
+        <div class="toolbar-group">
+          <button id="btn-undo" class="toolbar-btn" title="Annuler (Ctrl+Z)" data-tooltip="Annuler">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h10a5 5 0 015 5v0a5 5 0 01-5 5H12M3 10l4-4M3 10l4 4"/></svg>
+          </button>
+          <button id="btn-redo" class="toolbar-btn" title="Rétablir (Ctrl+Y)" data-tooltip="Rétablir">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10H11a5 5 0 00-5 5v0a5 5 0 005 5h1M21 10l-4-4M21 10l-4 4"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="toolbar-center">
+        <div class="toolbar-group">
+          <button id="btn-zoom-in" class="toolbar-btn" title="Zoom +" data-tooltip="Zoom +">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M8 11h6M11 8v6"/></svg>
+          </button>
+          <span id="zoom-level" class="zoom-display">100%</span>
+          <button id="btn-zoom-out" class="toolbar-btn" title="Zoom -" data-tooltip="Zoom -">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M8 11h6"/></svg>
+          </button>
+          <button id="btn-zoom-fit" class="toolbar-btn" title="Ajuster à l'écran" data-tooltip="Ajuster">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          </button>
+          <div class="toolbar-separator"></div>
+          <button id="btn-auto-layout" class="toolbar-btn" title="Réorganiser l'arbre" data-tooltip="Réorganiser">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <div class="toolbar-group">
+          <button id="btn-import" class="toolbar-btn" title="Importer XML" data-tooltip="Importer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          </button>
+          <button id="btn-export" class="toolbar-btn" title="Exporter XML" data-tooltip="Exporter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </button>
+        </div>
+        <div class="toolbar-separator"></div>
+        <button id="btn-settings" class="toolbar-btn" title="Paramètres" data-tooltip="Paramètres">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Properties Panel -->
+    <aside id="properties-panel" class="properties-panel hidden">
+      <div class="panel-header">
+        <h3>Propriétés</h3>
+        <button id="btn-close-panel" class="panel-close">&times;</button>
+      </div>
+      <div class="panel-content">
+        <div class="prop-group">
+          <label class="prop-label">
+            Couleur de fond
+            <button class="btn-cascade" data-cascade="bgColor" title="Appliquer à toute la descendance">↓</button>
+          </label>
+          <div class="prop-color-row">
+            <input type="color" id="prop-bg-color" class="prop-color-input" value="#667eea" />
+            <input type="text" id="prop-bg-color-text" class="prop-text-input" value="#667eea" />
+          </div>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">
+            Couleur du texte
+            <button class="btn-cascade" data-cascade="textColor" title="Appliquer à toute la descendance">↓</button>
+          </label>
+          <div class="prop-color-row">
+            <input type="color" id="prop-text-color" class="prop-color-input" value="#ffffff" />
+            <input type="text" id="prop-text-color-text" class="prop-text-input" value="#ffffff" />
+          </div>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">
+            Typographie
+            <button class="btn-cascade" data-cascade="fontFamily" title="Appliquer à toute la descendance">↓</button>
+          </label>
+          <select id="prop-font" class="prop-select">
+            <option value="Inter">Inter</option>
+            <option value="Arial">Arial</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Verdana">Verdana</option>
+            <option value="JetBrains Mono">JetBrains Mono</option>
+          </select>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">
+            Opacité
+            <button class="btn-cascade" data-cascade="opacity" title="Appliquer à toute la descendance">↓</button>
+          </label>
+          <div class="prop-slider-row">
+            <input type="range" id="prop-opacity" class="prop-range" min="0" max="1" step="0.05" value="1" />
+            <span id="prop-opacity-value" class="prop-range-value">100%</span>
+          </div>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">
+            Largeur
+            <button class="btn-cascade" data-cascade="width" title="Appliquer à toute la descendance">↓</button>
+          </label>
+          <div class="prop-slider-row">
+            <input type="range" id="prop-width" class="prop-range" min="100" max="800" step="10" value="200" />
+            <span id="prop-width-value" class="prop-range-value">Auto</span>
+          </div>
+          <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="prop-width-auto" checked />
+            <label for="prop-width-auto" style="font-size: 12px; color: var(--text-secondary); cursor: pointer;">Automatique (Responsive)</label>
+          </div>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">
+            Ligne (Enfants)
+            <button class="btn-cascade" data-cascade="links" title="Appliquer à toute la descendance">↓</button>
+          </label>
+          <div class="prop-color-row">
+            <input type="color" id="prop-link-color" class="prop-color-input" value="#667eea" />
+            <select id="prop-link-style" class="prop-select" style="flex:1">
+              <option value="solid">Continue</option>
+              <option value="dashed">Tirets</option>
+              <option value="dotted">Pointillés</option>
+            </select>
+          </div>
+          <select id="prop-link-dir" class="prop-select" style="margin-top: 8px;">
+            <option value="none">Sans flèche</option>
+            <option value="forward">Vers l'enfant</option>
+            <option value="backward">Vers le parent</option>
+            <option value="both">Bidirectionnel</option>
+          </select>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Canvas -->
+    <div id="canvas-container" class="canvas-container">
+      <div id="canvas" class="canvas">
+        <svg id="connections-layer" class="connections-layer"></svg>
+        <div id="nodes-layer" class="nodes-layer"></div>
+      </div>
+    </div>
+
+    <!-- Minimap -->
+    <div id="minimap" class="minimap">
+      <canvas id="minimap-canvas"></canvas>
+      <div id="minimap-viewport" class="minimap-viewport"></div>
+    </div>
+
+    <!-- Shortcuts help -->
+    <div id="shortcuts-overlay" class="shortcuts-overlay hidden">
+      <div class="shortcuts-dialog">
+        <div class="shortcuts-header">
+          <h2>Raccourcis & Aide</h2>
+          <button id="btn-close-shortcuts" class="panel-close">&times;</button>
+        </div>
+        <div class="shortcuts-sections">
+          <div class="shortcuts-section">
+            <h3 class="shortcuts-section-title">Édition</h3>
+            <div class="shortcuts-grid">
+              <div class="shortcut-item"><kbd>Tab</kbd><span>Ajouter un enfant</span></div>
+              <div class="shortcut-item"><kbd>Entrée</kbd><span>Ajouter un frère</span></div>
+              <div class="shortcut-item"><kbd>Alt+Entrée</kbd><span>Ouvrir les propriétés</span></div>
+              <div class="shortcut-item"><kbd>F2</kbd><span>Éditer le nœud</span></div>
+              <div class="shortcut-item"><kbd>Suppr</kbd><span>Supprimer le nœud</span></div>
+              <div class="shortcut-item"><kbd>Alt+Suppr</kbd><span>Supprimer les enfants</span></div>
+              <div class="shortcut-item"><kbd>Ctrl+C</kbd><span>Copier le texte</span></div>
+              <div class="shortcut-item"><kbd>Ctrl+V</kbd><span>Coller comme frère(s)</span></div>
+              <div class="shortcut-item"><kbd>Ctrl+Alt+V</kbd><span>Coller comme enfants (multi-lignes)</span></div>
+              <div class="shortcut-item"><kbd>Ctrl+Z</kbd><span>Annuler</span></div>
+              <div class="shortcut-item"><kbd>Ctrl+Y</kbd><span>Rétablir</span></div>
+              <div class="shortcut-item"><kbd>Ctrl+S</kbd><span>Sauvegarder</span></div>
+            </div>
+          </div>
+          <div class="shortcuts-section">
+            <h3 class="shortcuts-section-title">Navigation</h3>
+            <div class="shortcuts-grid">
+              <div class="shortcut-item"><kbd>→</kbd><span>Aller au 1er enfant</span></div>
+              <div class="shortcut-item"><kbd>←</kbd><span>Aller au parent</span></div>
+              <div class="shortcut-item"><kbd>↓</kbd><span>Frère suivant</span></div>
+              <div class="shortcut-item"><kbd>↑</kbd><span>Frère précédent</span></div>
+              <div class="shortcut-item"><kbd>Maj+Clic</kbd><span>Sélection multiple</span></div>
+              <div class="shortcut-item"><kbd>Échap</kbd><span>Tout désélectionner</span></div>
+            </div>
+          </div>
+          <div class="shortcuts-section">
+            <h3 class="shortcuts-section-title">Vue</h3>
+            <div class="shortcuts-grid">
+              <div class="shortcut-item"><kbd>+</kbd><span>Zoom avant</span></div>
+              <div class="shortcut-item"><kbd>-</kbd><span>Zoom arrière</span></div>
+              <div class="shortcut-item"><kbd>Ctrl+0</kbd><span>Réinitialiser la vue</span></div>
+              <div class="shortcut-item"><kbd>Espace</kbd><span>Mode panoramique</span></div>
+              <div class="shortcut-item"><kbd>?</kbd><span>Cette aide</span></div>
+            </div>
+          </div>
+          <div class="shortcuts-section">
+            <h3 class="shortcuts-section-title">Souris</h3>
+            <div class="shortcuts-grid">
+              <div class="shortcut-item"><kbd>Molette</kbd><span>Zoom</span></div>
+              <div class="shortcut-item"><kbd>Clic milieu</kbd><span>Panoramique</span></div>
+              <div class="shortcut-item"><kbd>Double clic</kbd><span>Éditer un nœud</span></div>
+              <div class="shortcut-item"><kbd>Clic droit</kbd><span>Menu contextuel</span></div>
+              <div class="shortcut-item"><kbd>Clic droit + glisser</kbd><span>Créer une liaison</span></div>
+              <div class="shortcut-item"><kbd>Clic sur un trait</kbd><span>Voir le chemin</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

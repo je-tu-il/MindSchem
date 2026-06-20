@@ -1,0 +1,122 @@
+/* ========================================
+   Canvas Styles
+   ======================================== */
+
+.canvas-container {
+  position: fixed;
+  top: var(--toolbar-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: var(--z-canvas);
+  cursor: grab;
+  background: var(--bg-primary);
+
+  /* Grid pattern */
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--border-subtle) 1px, transparent 0);
+  background-size: 30px 30px;
+}
+
+.canvas-container.panning {
+  cursor: grabbing;
+}
+
+.canvas-container.dragging-node {
+  cursor: grabbing;
+}
+
+.canvas-container.linking-mode {
+  cursor: crosshair;
+}
+
+.canvas-container.linking-mode .mind-node {
+  cursor: crosshair;
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.connections-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-connections);
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Connection lines */
+.connection-path {
+  fill: none;
+  stroke-width: 2;
+  pointer-events: none;
+  transition: stroke var(--transition-normal);
+}
+
+.connection-path.highlighted-child {
+  stroke: var(--accent-primary) !important;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px var(--accent-glow));
+}
+
+.connection-path.highlighted-ancestor {
+  stroke: var(--accent-warning) !important;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px rgba(251, 146, 60, 0.5));
+}
+
+/* Clicked connection highlights (#4) */
+.connection-path.highlighted-clicked-path {
+  stroke: var(--accent-primary) !important;
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.connection-path.highlighted-clicked-children {
+  stroke: #a855f7 !important;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.5));
+}
+
+/* Invisible hit-test area for clicking connections (#4) */
+.connection-hitbox {
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+/* Selection rectangle */
+.selection-rect {
+  position: absolute;
+  border: 2px dashed var(--accent-primary);
+  background: rgba(102, 126, 234, 0.08);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  z-index: 15;
+}
+
+/* Drop zone indicator */
+.drop-indicator {
+  position: absolute;
+  background: var(--accent-primary);
+  border-radius: var(--radius-full);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.drop-indicator.visible {
+  opacity: 1;
+  animation: pulse 1s ease infinite;
+}

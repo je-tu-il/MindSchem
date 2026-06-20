@@ -1,0 +1,297 @@
+/* ========================================
+   Node Styles
+   ======================================== */
+
+.mind-node {
+  position: absolute;
+  min-width: 120px;
+  max-width: 400px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-node);
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow var(--transition-normal),
+              border-color var(--transition-normal),
+              transform var(--transition-fast);
+  animation: nodeAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+.mind-node:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md), 0 0 0 1px var(--border-strong);
+  z-index: 11;
+}
+
+.mind-node.selected {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-md), 0 0 0 2px var(--accent-primary), var(--shadow-glow);
+  z-index: 12;
+}
+
+.mind-node.dragging {
+  z-index: 100;
+  box-shadow: var(--shadow-xl), 0 0 0 2px var(--accent-primary);
+  transform: scale(1.02);
+  cursor: grabbing;
+}
+
+.mind-node.drop-target {
+  border-color: var(--accent-success);
+  box-shadow: var(--shadow-md), 0 0 0 2px var(--accent-success), 0 0 20px rgba(52, 211, 153, 0.3);
+}
+
+.mind-node.root-node {
+  min-width: 160px;
+}
+
+.mind-node.root-node .node-content {
+  font-weight: 600;
+  font-size: var(--font-size-md);
+}
+
+/* Node content */
+.node-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.node-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  min-height: 24px;
+  color: var(--text-tertiary);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.node-drag-handle svg {
+  width: 12px;
+  height: 12px;
+}
+
+.mind-node:hover .node-drag-handle {
+  opacity: 0.6;
+}
+
+.node-drag-handle:hover {
+  opacity: 1 !important;
+  color: var(--text-secondary);
+}
+
+.node-content {
+  flex: 1;
+  padding: var(--space-md) var(--space-lg);
+  min-height: 24px;
+  outline: none;
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  color: inherit;
+  word-break: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.node-content:focus {
+  outline: none;
+}
+
+.node-content[contenteditable="true"] {
+  cursor: text;
+  user-select: text;
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.mind-node.text-expanded .node-content {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.node-resizer {
+  position: absolute;
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: ew-resize;
+  z-index: 10;
+}
+.node-resizer:hover {
+  background: linear-gradient(90deg, transparent 4px, var(--accent-primary) 4px, var(--accent-primary) 6px, transparent 6px);
+}
+
+/* Node children indicator */
+.node-children-count {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--accent-gradient);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-primary);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.mind-node:hover .node-children-count,
+.mind-node.selected .node-children-count {
+  opacity: 1;
+}
+
+/* Node action buttons */
+.node-actions {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  opacity: 0;
+  pointer-events: none;
+  transition: all var(--transition-normal);
+  animation: fadeInUp 0.2s ease;
+}
+
+.mind-node.selected .node-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.node-action-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.node-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.node-action-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.node-action-btn.action-delete:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--accent-danger);
+}
+
+.node-action-btn.action-color:hover {
+  background: rgba(102, 126, 234, 0.15);
+  color: var(--accent-primary);
+}
+
+/* Add child button on hover */
+.node-add-child {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--accent-gradient);
+  color: white;
+  border: 2px solid var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all var(--transition-normal);
+  z-index: 15;
+}
+
+.node-add-child svg {
+  width: 12px;
+  height: 12px;
+}
+
+.mind-node:hover .node-add-child,
+.mind-node.selected .node-add-child {
+  opacity: 1;
+}
+
+.node-add-child:hover {
+  transform: translateX(-50%) scale(1.2);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Collapse/Expand button */
+.node-toggle {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-medium);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all var(--transition-normal);
+  z-index: 15;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.mind-node:hover .node-toggle,
+.mind-node.selected .node-toggle {
+  opacity: 1;
+}
+
+.node-toggle:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+}
+
+.mind-node.collapsed .node-toggle {
+  opacity: 1;
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+}
