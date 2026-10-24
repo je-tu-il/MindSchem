@@ -282,7 +282,7 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
       const h = EST_HEIGHT;
       for (const node of this.nodes.values()) {
         const el = document.getElementById(node.id);
-        const nw = el ? Math.max(el.offsetWidth, 120) : w;
+        const nw = el ? Math.max(el.offsetWidth, typeof node.props?.width === 'number' ? node.props.width : 160) : (typeof node.props?.width === 'number' ? node.props.width : w);
         const nh = el ? Math.max(el.offsetHeight, 40) : h;
         
         // Use GAP as padding between nodes
@@ -306,10 +306,13 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
       parentId,
       x: targetX,
       y: targetY,
-      bgColor: props?.bgColor || DEFAULT_PROPS.bgColor,
-      textColor: props?.textColor || DEFAULT_PROPS.textColor,
-      fontFamily: props?.fontFamily || DEFAULT_PROPS.fontFamily,
-      opacity: props?.opacity != null ? props.opacity : DEFAULT_PROPS.opacity
+      bgColor: props?.bgColor || (parent.props?.isolated ? DEFAULT_PROPS.bgColor : (parent.props?.bgColor || DEFAULT_PROPS.bgColor)),
+      textColor: props?.textColor || (parent.props?.isolated ? DEFAULT_PROPS.textColor : (parent.props?.textColor || DEFAULT_PROPS.textColor)),
+      fontFamily: props?.fontFamily || (parent.props?.isolated ? DEFAULT_PROPS.fontFamily : (parent.props?.fontFamily || DEFAULT_PROPS.fontFamily)),
+      opacity: props?.opacity != null ? props.opacity : (parent.props?.isolated ? DEFAULT_PROPS.opacity : (parent.props?.opacity != null ? parent.props.opacity : DEFAULT_PROPS.opacity)),
+      linkColor: props?.linkColor || (parent.props?.isolated ? DEFAULT_PROPS.linkColor : (parent.props?.linkColor || DEFAULT_PROPS.linkColor)),
+      linkStyle: props?.linkStyle || (parent.props?.isolated ? DEFAULT_PROPS.linkStyle : (parent.props?.linkStyle || DEFAULT_PROPS.linkStyle)),
+      linkDir: props?.linkDir || (parent.props?.isolated ? DEFAULT_PROPS.linkDir : (parent.props?.linkDir || DEFAULT_PROPS.linkDir))
     });
 
     parent.children.push(data.id);
@@ -1404,7 +1407,9 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
 
       const totalHeight = measureSubtreeHeight(nodeId);
       let currentY = y - totalHeight / 2;
-      const childX = x + 280;
+      const parentEl = document.getElementById(nodeId);
+      const parentW = parentEl ? Math.max(parentEl.offsetWidth, 160) : (typeof node.props?.width === 'number' ? node.props.width : 200);
+      const childX = x + parentW + 80;
 
       for (const childId of node.children) {
         const childHeight = measureSubtreeHeight(childId);
@@ -1457,7 +1462,9 @@ addChild(parentId, text = 'Nouveau nœud', props = null) {
 
       const totalHeight = measureSubtreeHeight(nodeId);
       let currentY = y - totalHeight / 2;
-      const childX = x + 280;
+      const parentEl = document.getElementById(nodeId);
+      const parentW = parentEl ? Math.max(parentEl.offsetWidth, 160) : (typeof node.props?.width === 'number' ? node.props.width : 200);
+      const childX = x + parentW + 80;
 
       for (const childId of node.children) {
         const childHeight = measureSubtreeHeight(childId);

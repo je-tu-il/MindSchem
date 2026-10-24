@@ -114,8 +114,21 @@ export class PropertiesPanel {
       }
     });
 
-    // Link properties
-    document.getElementById('prop-link-color')?.addEventListener('change', (e) => {
+    // Link properties with live preview
+    const linkColorInput = document.getElementById('prop-link-color');
+    linkColorInput?.addEventListener('input', (e) => {
+      const val = e.target.value;
+      if (this.nodeManager?.selectedNodes) {
+        this.nodeManager.selectedNodes.forEach(id => {
+          const paths = document.querySelectorAll(`path[data-parent="${id}"]`);
+          paths.forEach(p => {
+            p.style.stroke = val;
+            p.classList.remove('highlighted-child', 'highlighted-ancestor');
+          });
+        });
+      }
+    });
+    linkColorInput?.addEventListener('change', (e) => {
       this.applyProp('linkColor', e.target.value);
     });
     document.getElementById('prop-link-style')?.addEventListener('change', (e) => {
@@ -174,13 +187,12 @@ export class PropertiesPanel {
     const propsToUpdate = { [propName]: value };
     const nodeIds = Array.from(this.nodeManager.selectedNodes);
 
-    // Auto-isolate child nodes if their property is explicitly modified
-    if (propName !== 'isolated') {
+    // Auto-isolate child nodes only when styling colors individually (not for width or isolated toggle)
+    if (propName !== 'isolated' && propName !== 'width') {
       nodeIds.forEach(id => {
         const n = this.nodeManager.nodes.get(id);
-        if (n && n.parentId) {
+        if (n && n.parentId && !cascade) {
           propsToUpdate.isolated = true;
-          // Update UI if the modified child is the currently selected node
           if (id === this.currentNodeId) {
             const isolated = document.getElementById('prop-isolated');
             if (isolated) isolated.checked = true;
