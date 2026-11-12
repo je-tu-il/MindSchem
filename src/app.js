@@ -15,6 +15,9 @@ import { PropertiesPanel } from './properties-panel.js';
 import { parseGlooMapsXML } from './xml-parser.js';
 import { serializeToGlooMapsXML } from './xml-serializer.js';
 import { showToast } from './toast.js';
+import { parseMarkdownToMindMap, exportNodesToMarkdown } from './markdown-converter.js';
+import { generateMindMapFromAI } from './ai-generator.js';
+
 
 export class App {
   constructor() {
@@ -125,15 +128,32 @@ export class App {
   /**
    * Setup import/export functionality
    */
+  /**
+   * Setup import/export and AI functionality
+   */
   setupImportExport() {
-    // Wire up import/export buttons
-    document.getElementById('btn-export-xml')?.addEventListener('click', () => {
-      const xml = serializeToGlooMapsXML(this.nodeManager.nodes);
-      this.downloadFile(xml, 'mindmap.xml', 'application/xml');
+    // GlooMaps XML Export / Import
+    document.getElementById('btn-export')?.addEventListener('click', () => {
+      this.exportXML();
     });
 
-    document.getElementById('btn-import-xml')?.addEventListener('click', () => {
-      document.getElementById('file-import-xml').click();
+    document.getElementById('btn-import')?.addEventListener('click', () => {
+      this.importXML();
+    });
+
+    // Markdown Export
+    document.getElementById('btn-export-md')?.addEventListener('click', () => {
+      this.exportMarkdown();
+    });
+
+    // Markdown Import
+    document.getElementById('btn-import-md')?.addEventListener('click', () => {
+      this.importMarkdown();
+    });
+
+    // AI Mind Map Generator (Oxion AI)
+    document.getElementById('btn-ai-mindmap')?.addEventListener('click', () => {
+      this.promptAIGeneration();
     });
 
     document.getElementById('btn-show-info')?.addEventListener('click', (e) => {
@@ -143,9 +163,95 @@ export class App {
   }
 
   /**
-   * Import GlooMaps XML file
+   * Prompt AI for automatic mind map generation
    */
-  importXML() {
+  async promptAIGeneration() {
+    const topic = window.prompt("Quel est le sujet ou l'objectif de la carte mentale à générer (Oxion AI) ?\nEx: Stratégie Marketing SaaS, Architecture Microservices, Cours d'histoire...");
+    if (!topic || !topic.trim()) return;
+
+    showToast("Génération de l'arborescence en cours...", "info");
+    try {
+      const nodes = await generateMindMapFromAI(topic.trim());
+      if (!nodes || nodes.length === 0) {
+        showToast("Aucun nœud n'a pu être généré.", "warning");
+        return;
+      }
+      this.nodeManager.loadNodes(nodes);
+      this.nodeManager.autoLayout();
+      this.canvas.zoomToFit();
+      this.history.clear();
+      showToast(`Arborescence "${topic.trim()}" générée avec succès (${nodes.length} nœuds) !`, "success");
+    } catch (err) {
+      console.error("AI Generation error:", err);
+      showToast("Erreur de génération : " + err.message, "error", 5000);
+    }
+  }
+
+  /**
+   * Import Markdown indented outline
+   */
+  importMarkdown() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.md,.txt,text/markdown,text/plain';
+
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const mdText = ev.target.result;
+          const nodes = parseMarkdownToMindMap(mdText);
+
+          if (!nodes || nodes.length === 0) {
+            showToast('Aucun nœud Markdown trouvé dans le fichier.', 'warning');
+            return;
+          }
+
+          this.nodeManager.loadNodes(nodes);
+          this.nodeManager.autoLayout();
+          this.canvas.zoomToFit();
+          this.history.clear();
+
+          showToast(`${nodes.length} nœuds importés depuis Markdown !`, 'success');
+        } catch (err) {
+          console.error('Import Markdown error:', err);
+          showToast('Erreur d\'import Markdown : ' + err.message, 'error', 5000);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    input.click();
+  }
+
+  /**
+   * Export to Markdown indented outline (Obsidian / Notion ready)
+   */
+  exportMarkdown() {
+    try {
+      const md = exportNodesToMarkdown(this.nodeManager);
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mindschem-export-${new Date().toISOString().slice(0, 10)}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast('Export Markdown Obsidian réussi !', 'success');
+    } catch (err) {
+      console.error('Export Markdown error:', err);
+      showToast('Erreur d\'export Markdown : ' + err.message, 'error');
+    }
+  }
+
+    importXML() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.xml,text/xml,application/xml';
