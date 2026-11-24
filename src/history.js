@@ -7,7 +7,7 @@ export class History {
     this.undoStack = [];
     this.redoStack = [];
     this.maxSize = maxSize;
-    this.batching = false;
+    this.batchDepth = 0;
     this.batchActions = [];
   }
 
@@ -16,7 +16,7 @@ export class History {
    * @param {Object} action - { type, undo: Function, redo: Function, description }
    */
   push(action) {
-    if (this.batching) {
+    if (this.batchDepth > 0) {
       this.batchActions.push(action);
       return;
     }
@@ -33,17 +33,20 @@ export class History {
    * Begin batching multiple actions as one undo step.
    */
   beginBatch(description = 'Batch') {
-    this.batching = true;
-    this.batchActions = [];
-    this.batchDescription = description;
+    if (this.batchDepth === 0) {
+      this.batchActions = [];
+      this.batchDescription = description;
+    }
+    this.batchDepth++;
   }
 
   /**
    * End batching and push as single action.
    */
   endBatch() {
-    this.batching = false;
-    if (this.batchActions.length === 0) return;
+    if (this.batchDepth === 0) return;
+    this.batchDepth--;
+    if (this.batchDepth > 0 || this.batchActions.length === 0) return;
 
     const actions = [...this.batchActions];
     this.batchActions = [];
@@ -66,16 +69,18 @@ export class History {
 
   undo() {
     if (this.undoStack.length === 0) return false;
-    const action = this.undoStack.pop();
+    const action = this.undoStack.at(-1);
     action.undo();
+    this.undoStack.pop();
     this.redoStack.push(action);
     return true;
   }
 
   redo() {
     if (this.redoStack.length === 0) return false;
-    const action = this.redoStack.pop();
+    const action = this.redoStack.at(-1);
     action.redo();
+    this.redoStack.pop();
     this.undoStack.push(action);
     return true;
   }
@@ -91,5 +96,7 @@ export class History {
   clear() {
     this.undoStack = [];
     this.redoStack = [];
+    this.batchDepth = 0;
+    this.batchActions = [];
   }
 }

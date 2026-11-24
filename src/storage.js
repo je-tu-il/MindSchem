@@ -54,7 +54,7 @@ export class Storage {
       if (!raw) return false;
 
       const data = JSON.parse(raw);
-      if (!data.nodes || data.nodes.length === 0) return false;
+      if (!Array.isArray(data?.nodes) || data.nodes.some(node => !node || typeof node.id !== 'string')) return false;
 
       this.nodeManager.loadNodes(data.nodes);
       return true;
